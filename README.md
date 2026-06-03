@@ -3,6 +3,7 @@
 </p>
 
 # BI(AI)UI - Automated Business Intelligence Tool
+https://youtu.be/bkBXZeKwJMc 
 
 **BI(AI)UI** — это современное приложение для автоматизированного создания бизнес-аналитики с использованием визуального нодового интерфейса и возможностей искусственного интеллекта (Gemini, Mistral, OpenAI, Claude). 
 
