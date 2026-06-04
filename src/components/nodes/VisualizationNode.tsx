@@ -143,7 +143,7 @@ export function VisualizationNode({ id, selected }: { id: string, selected?: boo
       icon={<BarChart2 size={14} />}
       color="emerald"
       selected={selected}
-      className="w-[800px]"
+      className="w-[600px]"
       handles={[
         { type: 'target', position: Position.Left },
         { type: 'source', position: Position.Right }
