@@ -19,7 +19,7 @@ export function WatchNode({ id, selected }: { id: string, selected?: boolean }) 
     if (actualSourceNode.type === 'watch') {
       const watchIncomingEdges = edges.filter(e => e.target === actualSourceNode!.id);
       actualSourceNode = nodes.find(n => n.id === watchIncomingEdges[0]?.source);
-    } else if (actualSourceNode.type === 'transform' && (!actualSourceNode.data.outputHeaders || actualSourceNode.data.outputHeaders.length === 0)) {
+    } else if (actualSourceNode.type === 'transform' && (!actualSourceNode.data.outputHeaders || (actualSourceNode.data.outputHeaders as any[]).length === 0)) {
       // If transform hasn't run, show its input (raw data)
       const incomingEdges = edges.filter(e => e.target === actualSourceNode!.id);
       actualSourceNode = nodes.find(n => n.id === incomingEdges[0]?.source);
@@ -115,3 +115,4 @@ export function WatchNode({ id, selected }: { id: string, selected?: boolean }) 
     </BaseNode>
   );
 }
+

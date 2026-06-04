@@ -43,7 +43,8 @@ type AppState = {
   onEdgesChange: OnEdgesChange;
   onConnect: OnConnect;
   addNode: (node: AppNode) => void;
-  duplicateNode: (id: string) => void;
+  addNodesAndEdges: (nodes: AppNode[], edges: Edge[]) => void;
+  duplicateNodes: (ids: string[]) => void;
   updateNodeData: (id: string, data: any) => void;
 
   dataSources: DataSource[];
@@ -112,29 +113,64 @@ export const useStore = create<AppState>()(
           nodes: [...get().nodes, node],
         });
       },
-      duplicateNode: (id: string) => {
-        const nodeToCopy = get().nodes.find((n) => n.id === id);
-        if (!nodeToCopy) return;
-
-        // Deep copy to prevent shared object references (e.g. prompt history)
-        const clonedNode = JSON.parse(JSON.stringify(nodeToCopy));
-        
-        const newNode: AppNode = {
-          ...clonedNode,
-          id: `${clonedNode.type}-${Date.now()}`,
-          position: {
-            x: clonedNode.position.x + 50,
-            y: clonedNode.position.y + 50,
-          },
-          selected: true,
-        };
-
+      addNodesAndEdges: (newNodes: AppNode[], newEdges: Edge[]) => {
         set({
           nodes: [
             ...get().nodes.map((n) => ({ ...n, selected: false })),
-            newNode,
+            ...newNodes,
           ],
-          selectedNodeId: newNode.id,
+          edges: [
+            ...get().edges.map((e) => ({ ...e, selected: false })),
+            ...newEdges,
+          ],
+        });
+      },
+      duplicateNodes: (ids: string[]) => {
+        const state = get();
+        const nodesToCopy = state.nodes.filter((n) => ids.includes(n.id));
+        if (nodesToCopy.length === 0) return;
+
+        const idMap = new Map<string, string>();
+        const newNodes: AppNode[] = nodesToCopy.map((node) => {
+          const clonedNode = JSON.parse(JSON.stringify(node));
+          const newId = `${clonedNode.type}-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+          idMap.set(node.id, newId);
+          return {
+            ...clonedNode,
+            id: newId,
+            position: {
+              x: clonedNode.position.x + 50,
+              y: clonedNode.position.y + 50,
+            },
+            selected: true,
+          };
+        });
+
+        const edgesToCopy = state.edges.filter(
+          (edge) => idMap.has(edge.source) && idMap.has(edge.target)
+        );
+
+        const newEdges: Edge[] = edgesToCopy.map((edge) => {
+          const clonedEdge = JSON.parse(JSON.stringify(edge));
+          return {
+            ...clonedEdge,
+            id: `e-${idMap.get(edge.source)}-${idMap.get(edge.target)}-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+            source: idMap.get(edge.source)!,
+            target: idMap.get(edge.target)!,
+            selected: true,
+          };
+        });
+
+        set({
+          nodes: [
+            ...state.nodes.map((n) => ({ ...n, selected: false })),
+            ...newNodes,
+          ],
+          edges: [
+            ...state.edges.map((e) => ({ ...e, selected: false })),
+            ...newEdges,
+          ],
+          selectedNodeId: newNodes.length === 1 ? newNodes[0].id : null,
         });
       },
       updateNodeData: (id: string, data: any) => {
@@ -209,13 +245,13 @@ export const useStore = create<AppState>()(
         set((state) => {
           const updates: Partial<AppState> = { llmProvider: provider };
           if (provider === 'mistral' && !state.mistralToken) {
-            updates.mistralToken = import.meta.env.VITE_MISTRAL_API_KEY || '';
+            updates.mistralToken = (import.meta as any).env.VITE_MISTRAL_API_KEY || '';
           }
           return updates;
         });
       },
 
-      mistralToken: import.meta.env.VITE_MISTRAL_API_KEY || '',
+      mistralToken: (import.meta as any).env.VITE_MISTRAL_API_KEY || '',
       setMistralToken: (token) => {
         set({ mistralToken: token });
       },

@@ -79,7 +79,7 @@ export function BaseNode({
   headerActions,
   handles = []
 }: BaseNodeProps) {
-  const duplicateNode = useStore((s) => s.duplicateNode);
+  const duplicateNodes = useStore((s) => s.duplicateNodes);
   const theme = colorMap[color];
 
   return (
@@ -110,7 +110,7 @@ export function BaseNode({
           </div>
           <div className="flex items-center gap-2">
             <button 
-              onClick={() => duplicateNode(id)}
+              onClick={() => duplicateNodes([id])}
               className={`text-slate-400 ${theme.hoverText} dark:text-slate-500 transition-colors`}
               title="Duplicate Node"
             >

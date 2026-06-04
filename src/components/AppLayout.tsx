@@ -39,7 +39,7 @@ export function AppLayout() {
         if (sourceNode.type === 'watch') {
           const watchIncomingEdges = edges.filter(e => e.target === sourceNode!.id);
           sourceNode = nodes.find(n => n.id === watchIncomingEdges[0]?.source);
-        } else if (sourceNode.type === 'transform' && (!sourceNode.data.outputHeaders || sourceNode.data.outputHeaders.length === 0)) {
+        } else if (sourceNode.type === 'transform' && (!sourceNode.data.outputHeaders || (sourceNode.data.outputHeaders as any[]).length === 0)) {
           const incomingEdges = edges.filter(e => e.target === sourceNode!.id);
           sourceNode = nodes.find(n => n.id === incomingEdges[0]?.source);
         } else if (sourceNode.type === 'visualization' && !sourceNode.data.outputChartConfig) {
@@ -150,3 +150,4 @@ export function AppLayout() {
     </div>
   );
 }
+

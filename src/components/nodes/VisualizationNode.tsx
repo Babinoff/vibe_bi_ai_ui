@@ -43,7 +43,7 @@ export function VisualizationNode({ id, selected }: { id: string, selected?: boo
         if (actualSourceNode.type === 'watch') {
           const watchIncomingEdges = edges.filter(e => e.target === actualSourceNode!.id);
           actualSourceNode = nodes.find(n => n.id === watchIncomingEdges[0]?.source);
-        } else if (actualSourceNode.type === 'transform' && (!actualSourceNode.data.outputHeaders || actualSourceNode.data.outputHeaders.length === 0)) {
+        } else if (actualSourceNode.type === 'transform' && (!actualSourceNode.data.outputHeaders || (actualSourceNode.data.outputHeaders as any[]).length === 0)) {
           const incomingEdges = edges.filter(e => e.target === actualSourceNode!.id);
           actualSourceNode = nodes.find(n => n.id === incomingEdges[0]?.source);
         } else if (actualSourceNode.type === 'visualization' && !actualSourceNode.data.outputChartConfig) {
@@ -98,7 +98,8 @@ export function VisualizationNode({ id, selected }: { id: string, selected?: boo
       );
       
       const parsedChartType = configData.chartType || chartType;
-      const generatedConfigStr = configData.configCode || (typeof configData.config === 'string' ? configData.config : JSON.stringify(configData.config || configData, null, 2));
+      const anyConfigData = configData as any;
+      const generatedConfigStr = anyConfigData.configCode || (typeof anyConfigData.config === 'string' ? anyConfigData.config : JSON.stringify(anyConfigData.config || configData, null, 2));
       const generatedChartType = parsedChartType;
 
       const newHistoryItem = {
@@ -137,7 +138,7 @@ export function VisualizationNode({ id, selected }: { id: string, selected?: boo
         if (actualSourceNode.type === 'watch') {
           const watchIncomingEdges = edges.filter(e => e.target === actualSourceNode!.id);
           actualSourceNode = nodes.find(n => n.id === watchIncomingEdges[0]?.source);
-        } else if (actualSourceNode.type === 'transform' && (!actualSourceNode.data.outputHeaders || actualSourceNode.data.outputHeaders.length === 0)) {
+        } else if (actualSourceNode.type === 'transform' && (!actualSourceNode.data.outputHeaders || (actualSourceNode.data.outputHeaders as any[]).length === 0)) {
           const incomingEdges = edges.filter(e => e.target === actualSourceNode!.id);
           actualSourceNode = nodes.find(n => n.id === incomingEdges[0]?.source);
         } else if (actualSourceNode.type === 'visualization' && !actualSourceNode.data.outputChartConfig) {
@@ -199,9 +200,24 @@ export function VisualizationNode({ id, selected }: { id: string, selected?: boo
         finalConfig.data = parsedConfig;
       }
       
+      const latestHistoryItem = promptHistory[0];
+      let newPromptHistory = promptHistory;
+      if (generatedConfig && (!latestHistoryItem || latestHistoryItem.config !== generatedConfig)) {
+        const newHistoryItem = {
+          id: Date.now().toString(),
+          prompt: "Пользовательская корректировка",
+          config: generatedConfig,
+          libraryId,
+          chartType,
+          timestamp: new Date().toISOString(),
+        };
+        newPromptHistory = [newHistoryItem, ...(Array.isArray(promptHistory) ? promptHistory : [])];
+      }
+      
       updateNodeData(id, { 
         outputChartConfig: finalConfig,
-        outputLibraryId: libraryId
+        outputLibraryId: libraryId,
+        promptHistory: newPromptHistory
       });
       addLog('Visualization running. Connect a Watch node to view.', 'success');
       setShowLogs(true);
@@ -379,3 +395,4 @@ export function VisualizationNode({ id, selected }: { id: string, selected?: boo
     </BaseNode>
   );
 }
+

@@ -180,7 +180,7 @@ export function DashboardPanel() {
         if (actualSourceNode.type === 'watch') {
           const watchIncomingEdges = edges.filter(e => e.target === actualSourceNode!.id);
           actualSourceNode = nodes.find(n => n.id === watchIncomingEdges[0]?.source);
-        } else if (actualSourceNode.type === 'transform' && (!actualSourceNode.data.outputHeaders || actualSourceNode.data.outputHeaders.length === 0)) {
+        } else if (actualSourceNode.type === 'transform' && (!actualSourceNode.data.outputHeaders || (actualSourceNode.data.outputHeaders as any[]).length === 0)) {
           const incomingEdges = edges.filter(e => e.target === actualSourceNode!.id);
           actualSourceNode = nodes.find(n => n.id === incomingEdges[0]?.source);
         } else if (actualSourceNode.type === 'visualization' && !actualSourceNode.data.outputChartConfig) {
@@ -318,3 +318,4 @@ export function DashboardPanel() {
     </div>
   );
 }
+

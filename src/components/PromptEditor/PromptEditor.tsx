@@ -23,6 +23,7 @@ export function PromptEditor({ nodeId }: { nodeId: string }) {
   const [logs, setLogs] = useState<{id: string, text: string, type: 'info'|'error'|'success'}[]>([]);
   const [showLogs, setShowLogs] = useState(false);
   const [isRunning, setIsRunning] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
 
   const history: PromptHistoryItem[] = (node?.data?.history || []) as PromptHistoryItem[];
   const currentCode = (node?.data?.code || '') as string;
@@ -49,7 +50,7 @@ export function PromptEditor({ nodeId }: { nodeId: string }) {
         if (actualSourceNode.type === 'watch') {
           const watchIncomingEdges = edges.filter(e => e.target === actualSourceNode!.id);
           actualSourceNode = nodes.find(n => n.id === watchIncomingEdges[0]?.source);
-        } else if (actualSourceNode.type === 'transform' && (!actualSourceNode.data.outputHeaders || actualSourceNode.data.outputHeaders.length === 0)) {
+        } else if (actualSourceNode.type === 'transform' && (!actualSourceNode.data.outputHeaders || (actualSourceNode.data.outputHeaders as any[]).length === 0)) {
           const incomingEdges = edges.filter(e => e.target === actualSourceNode!.id);
           actualSourceNode = nodes.find(n => n.id === incomingEdges[0]?.source);
         } else if (actualSourceNode.type === 'visualization' && !actualSourceNode.data.outputChartConfig) {
@@ -82,9 +83,23 @@ export function PromptEditor({ nodeId }: { nodeId: string }) {
       
       const result = await PythonRunner.run(currentCode, inputHeaders, inputData, (msg: string) => addLog(msg, 'info'));
       
+      const latestHistoryItem = history[history.length - 1];
+      let updatedHistory = history;
+      if (currentCode && (!latestHistoryItem || latestHistoryItem.code !== currentCode)) {
+        const newHistoryItem: PromptHistoryItem = {
+          id: Date.now().toString(),
+          prompt: "Пользовательская корректировка",
+          code: currentCode,
+          rawResponse: "Отредактировано пользователем вручную",
+          timestamp: Date.now()
+        };
+        updatedHistory = [...history, newHistoryItem];
+      }
+      
       updateNodeData(nodeId, {
         outputHeaders: result.headers,
-        outputData: result.data
+        outputData: result.data,
+        history: updatedHistory
       });
       
       if (result.printed_text) {
@@ -125,7 +140,7 @@ export function PromptEditor({ nodeId }: { nodeId: string }) {
         if (actualSourceNode.type === 'watch') {
           const watchIncomingEdges = edges.filter(e => e.target === actualSourceNode!.id);
           actualSourceNode = nodes.find(n => n.id === watchIncomingEdges[0]?.source);
-        } else if (actualSourceNode.type === 'transform' && (!actualSourceNode.data.outputHeaders || actualSourceNode.data.outputHeaders.length === 0)) {
+        } else if (actualSourceNode.type === 'transform' && (!actualSourceNode.data.outputHeaders || (actualSourceNode.data.outputHeaders as any[]).length === 0)) {
           const incomingEdges = edges.filter(e => e.target === actualSourceNode!.id);
           actualSourceNode = nodes.find(n => n.id === incomingEdges[0]?.source);
         } else if (actualSourceNode.type === 'visualization' && !actualSourceNode.data.outputChartConfig) {
@@ -284,6 +299,13 @@ export function PromptEditor({ nodeId }: { nodeId: string }) {
             Generated Code
           </label>
           <div className="flex items-center gap-2">
+            <button 
+              onClick={() => setIsEditing(!isEditing)}
+              className={`text-[10px] px-1.5 py-0.5 rounded transition-colors flex items-center gap-1 ${isEditing ? 'bg-blue-100 dark:bg-blue-600/20 text-blue-600 dark:text-blue-400' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'}`}
+              title="Toggle Edit Mode"
+            >
+              {isEditing ? 'View' : 'Edit'}
+            </button>
             {!showLogs && logs.length > 0 && (
               <button 
                 onClick={() => setShowLogs(true)}
@@ -306,15 +328,25 @@ export function PromptEditor({ nodeId }: { nodeId: string }) {
         </div>
         
         <div className="border border-slate-200 dark:border-slate-700 rounded overflow-hidden bg-slate-50 dark:bg-[#1e1e1e] relative h-32">
-          {currentCode ? (
-            <SyntaxHighlighter
-              language="python"
-              style={vscDarkPlus}
-              customStyle={{ margin: 0, padding: '0.5rem', height: '100%', fontSize: '0.75rem', backgroundColor: 'transparent' }}
-              className="custom-scrollbar nodrag"
-            >
-              {String(currentCode)}
-            </SyntaxHighlighter>
+          {currentCode || isEditing ? (
+            isEditing ? (
+              <textarea
+                value={currentCode}
+                onChange={(e) => updateNodeData(nodeId, { code: e.target.value })}
+                spellCheck={false}
+                className="w-full h-full bg-transparent text-slate-700 dark:text-slate-300 text-[10px] font-mono p-2 resize-none focus:outline-none custom-scrollbar nodrag"
+                placeholder="# Write your Python code here..."
+              />
+            ) : (
+              <SyntaxHighlighter
+                language="python"
+                style={vscDarkPlus}
+                customStyle={{ margin: 0, padding: '0.5rem', height: '100%', fontSize: '0.75rem', backgroundColor: 'transparent' }}
+                className="custom-scrollbar nodrag"
+              >
+                {String(currentCode)}
+              </SyntaxHighlighter>
+            )
           ) : (
             <div className="absolute inset-0 flex items-center justify-center text-slate-400 dark:text-slate-600 text-[10px]">
               No code generated yet
@@ -381,3 +413,4 @@ export function PromptEditor({ nodeId }: { nodeId: string }) {
     </div>
   );
 }
+

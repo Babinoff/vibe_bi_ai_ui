@@ -37,7 +37,7 @@ function FlowEditor() {
   } = useStore();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { screenToFlowPosition } = useReactFlow();
-  const [copiedNode, setCopiedNode] = useState<AppNode | null>(null);
+  const [clipboard, setClipboard] = useState<{nodes: AppNode[], edges: any[]}>({ nodes: [], edges: [] });
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -47,56 +47,81 @@ function FlowEditor() {
         return;
       }
 
+      const state = useStore.getState();
+
       if ((e.ctrlKey || e.metaKey) && e.key === 'c') {
-        const selectedNodeId = useStore.getState().selectedNodeId;
-        if (selectedNodeId) {
-          const nodeToCopy = useStore.getState().nodes.find(n => n.id === selectedNodeId);
+        const selectedNodes = state.nodes.filter(n => n.selected);
+        if (selectedNodes.length > 0) {
+          const selectedNodeIds = new Set(selectedNodes.map(n => n.id));
+          const selectedEdges = state.edges.filter(
+            edge => selectedNodeIds.has(edge.source) && selectedNodeIds.has(edge.target)
+          );
+          setClipboard({ nodes: selectedNodes, edges: selectedEdges });
+        } else if (state.selectedNodeId) {
+          // Fallback if no nodes are strictly 'selected' but we have one active
+          const nodeToCopy = state.nodes.find(n => n.id === state.selectedNodeId);
           if (nodeToCopy) {
-            setCopiedNode(nodeToCopy);
+            setClipboard({ nodes: [nodeToCopy], edges: [] });
           }
         }
       }
 
       if ((e.ctrlKey || e.metaKey) && e.key === 'd') {
         e.preventDefault();
-        const selectedNodeId = useStore.getState().selectedNodeId;
-        if (selectedNodeId) {
-          useStore.getState().duplicateNode(selectedNodeId);
+        const selectedNodes = state.nodes.filter(n => n.selected);
+        if (selectedNodes.length > 0) {
+          state.duplicateNodes(selectedNodes.map(n => n.id));
+        } else if (state.selectedNodeId) {
+          state.duplicateNodes([state.selectedNodeId]);
         }
       }
 
       if ((e.ctrlKey || e.metaKey) && e.key === 'v') {
-        if (copiedNode) {
-          // Deep clone to ensure independent object references for data/history
-          const clonedNode = JSON.parse(JSON.stringify(copiedNode));
+        if (clipboard.nodes.length > 0) {
+          const idMap = new Map<string, string>();
           
-          const newNode = {
-            ...clonedNode,
-            id: `${clonedNode.type}-${Date.now()}`,
-            position: {
-              x: clonedNode.position.x + 50,
-              y: clonedNode.position.y + 50,
-            },
-            selected: true,
-          };
+          const newNodes = clipboard.nodes.map(node => {
+            const clonedNode = JSON.parse(JSON.stringify(node));
+            const newId = `${clonedNode.type}-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+            idMap.set(node.id, newId);
+            
+            return {
+              ...clonedNode,
+              id: newId,
+              position: {
+                x: clonedNode.position.x + 50,
+                y: clonedNode.position.y + 50,
+              },
+              selected: true,
+            };
+          });
+
+          const newEdges = clipboard.edges.map(edge => {
+            const clonedEdge = JSON.parse(JSON.stringify(edge));
+            return {
+              ...clonedEdge,
+              id: `e-${idMap.get(edge.source)}-${idMap.get(edge.target)}-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+              source: idMap.get(edge.source)!,
+              target: idMap.get(edge.target)!,
+              selected: true,
+            };
+          });
+
+          state.addNodesAndEdges(newNodes, newEdges);
           
-          // Deselect all existing nodes
-          useStore.getState().onNodesChange(
-            useStore.getState().nodes.map(n => ({ id: n.id, type: 'select', selected: false }))
-          );
+          if (newNodes.length === 1) {
+            state.setSelectedNodeId(newNodes[0].id);
+          }
           
-          useStore.getState().addNode(newNode);
-          useStore.getState().setSelectedNodeId(newNode.id);
-          
-          // Update copied node to the new cloned one so pasting again offsets further
-          setCopiedNode(newNode); 
+          // Update clipboard so pasting again offsets further
+          setClipboard({ nodes: newNodes, edges: newEdges });
         }
       }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [copiedNode]);
+  }, [clipboard]);
 
   const handleAddNode = (type: string) => {
     const position = screenToFlowPosition({
