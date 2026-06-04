@@ -79,9 +79,14 @@ export function WatchNode({ id, selected }: { id: string, selected?: boolean }) 
             </div>
           ) : headers.length > 0 ? (
             <div className="flex flex-col gap-1 h-full">
-              <div className="text-[10px] text-slate-500 dark:text-slate-400 mb-1 flex items-center gap-1 shrink-0">
-                <Table2 size={10} />
-                {data.length} rows, {headers.length} cols
+              <div className="text-[10px] text-slate-500 dark:text-slate-400 mb-1 flex items-center justify-between shrink-0">
+                <div className="flex items-center gap-1">
+                  <Table2 size={10} />
+                  {data.length} rows, {headers.length} cols
+                </div>
+                <div className="italic opacity-75">
+                  Showing first {Math.min(500, data.length)} rows
+                </div>
               </div>
               <div className="overflow-auto border border-slate-200 dark:border-slate-700 rounded flex-1 custom-scrollbar">
                 <table className="w-full text-left border-collapse text-[8px]">
@@ -94,7 +99,7 @@ export function WatchNode({ id, selected }: { id: string, selected?: boolean }) 
                     </tr>
                   </thead>
                   <tbody>
-                    {data.slice(0, 50).map((row: any[], rowIndex: number) => (
+                    {data.slice(0, 500).map((row: any[], rowIndex: number) => (
                       <tr key={rowIndex} className="bg-white dark:bg-slate-800">
                         {row.slice(0, 10).map((cell: any, cellIndex: number) => (
                           <td key={cellIndex} className="p-1 border-b border-r border-slate-200 dark:border-slate-700 truncate max-w-[100px] text-slate-600 dark:text-slate-300">

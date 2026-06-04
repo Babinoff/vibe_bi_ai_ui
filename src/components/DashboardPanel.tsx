@@ -209,9 +209,14 @@ export function DashboardPanel() {
 
       return (
         <div className="flex flex-col h-full gap-4">
-          <div className="flex items-center gap-2 text-orange-500 dark:text-orange-400">
-            <Eye size={20} />
-            <h3 className="font-semibold text-slate-900 dark:text-slate-200">Watch Data</h3>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2 text-orange-500 dark:text-orange-400">
+              <Eye size={20} />
+              <h3 className="font-semibold text-slate-900 dark:text-slate-200">Watch Data</h3>
+            </div>
+            <div className="text-xs text-slate-500 dark:text-slate-400">
+              {data.length} rows (showing top {Math.min(500, data.length)})
+            </div>
           </div>
           
           {headers.length > 0 ? (
@@ -227,7 +232,7 @@ export function DashboardPanel() {
                   </tr>
                 </thead>
                 <tbody>
-                  {data.slice(0, 50).map((row: any[], rowIndex: number) => (
+                  {data.slice(0, 500).map((row: any[], rowIndex: number) => (
                     <tr key={rowIndex} className="hover:bg-slate-100 dark:hover:bg-slate-800/50 transition-colors">
                       {row.map((cell: any, cellIndex: number) => (
                         <td key={cellIndex} className="p-2 border-b border-r border-slate-200 dark:border-slate-700/50 text-slate-600 dark:text-slate-400 whitespace-nowrap max-w-[200px] truncate" title={String(cell)}>
