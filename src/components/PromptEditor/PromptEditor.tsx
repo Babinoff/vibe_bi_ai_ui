@@ -41,21 +41,24 @@ export function PromptEditor({ nodeId }: { nodeId: string }) {
     addLog('Starting local Python execution...', 'info');
     
     try {
-      const incomingEdges = edges.filter(e => e.target === nodeId);
-      const sourceNode = nodes.find(n => n.id === incomingEdges[0]?.source);
+      const state = useStore.getState();
+      const incomingEdges = state.edges.filter(e => e.target === nodeId);
+      const sourceNode = state.nodes.find(n => n.id === incomingEdges[0]?.source);
+      
+      addLog(`[Debug] Edges to this node: ${incomingEdges.length}. Source: ${sourceNode?.id} (${sourceNode?.type})`, 'info');
       
       let actualSourceNode = sourceNode;
       // Traverse back if it's a watch node, or a node without output
       while (actualSourceNode) {
         if (actualSourceNode.type === 'watch') {
-          const watchIncomingEdges = edges.filter(e => e.target === actualSourceNode!.id);
-          actualSourceNode = nodes.find(n => n.id === watchIncomingEdges[0]?.source);
+          const watchIncomingEdges = state.edges.filter(e => e.target === actualSourceNode!.id);
+          actualSourceNode = state.nodes.find(n => n.id === watchIncomingEdges[0]?.source);
         } else if (actualSourceNode.type === 'transform' && (!actualSourceNode.data.outputHeaders || (actualSourceNode.data.outputHeaders as any[]).length === 0)) {
-          const incomingEdges = edges.filter(e => e.target === actualSourceNode!.id);
-          actualSourceNode = nodes.find(n => n.id === incomingEdges[0]?.source);
+          const incomingEdges = state.edges.filter(e => e.target === actualSourceNode!.id);
+          actualSourceNode = state.nodes.find(n => n.id === incomingEdges[0]?.source);
         } else if (actualSourceNode.type === 'visualization' && !actualSourceNode.data.outputChartConfig) {
-          const incomingEdges = edges.filter(e => e.target === actualSourceNode!.id);
-          actualSourceNode = nodes.find(n => n.id === incomingEdges[0]?.source);
+          const incomingEdges = state.edges.filter(e => e.target === actualSourceNode!.id);
+          actualSourceNode = state.nodes.find(n => n.id === incomingEdges[0]?.source);
         } else {
           break;
         }
@@ -65,10 +68,10 @@ export function PromptEditor({ nodeId }: { nodeId: string }) {
       let inputData: any[][] = [];
 
       if (actualSourceNode?.type === 'dataSource' && actualSourceNode.data.selectedSourceId) {
-        const ds = dataSources.find(d => d.id === actualSourceNode.data.selectedSourceId);
+        const ds = state.dataSources.find(d => d.id === actualSourceNode!.data.selectedSourceId);
         if (ds) {
-          inputHeaders = ds.headers;
-          inputData = ds.previewData;
+          inputHeaders = ds.headers || [];
+          inputData = ds.data || (ds as any).previewData || [];
         }
       } else if (actualSourceNode?.data?.outputHeaders) {
         inputHeaders = (actualSourceNode.data.outputHeaders || []) as string[];
@@ -76,7 +79,7 @@ export function PromptEditor({ nodeId }: { nodeId: string }) {
       }
 
       if (inputHeaders.length === 0) {
-        throw new Error('No input data found. Connect a Data Source first.');
+        throw new Error(`No input data found. Debug: sourceNode=${actualSourceNode?.id}, type=${actualSourceNode?.type}, hasDS=${!!actualSourceNode?.data?.selectedSourceId}, dsFound=${!!state.dataSources.find(d => d.id === actualSourceNode?.data?.selectedSourceId)}, headersLen=${inputHeaders.length}`);
       }
 
       addLog(`Passing ${inputData.length} rows to Python runtime...`, 'info');
@@ -126,10 +129,11 @@ export function PromptEditor({ nodeId }: { nodeId: string }) {
     addLog('Starting generation process...', 'info');
     
     try {
+      const state = useStore.getState();
       addLog('Analyzing connected nodes...', 'info');
       // Find connected data source
-      const incomingEdges = edges.filter(e => e.target === nodeId);
-      const sourceNode = nodes.find(n => n.id === incomingEdges[0]?.source);
+      const incomingEdges = state.edges.filter(e => e.target === nodeId);
+      const sourceNode = state.nodes.find(n => n.id === incomingEdges[0]?.source);
       
       let schema: ColumnInfo[] = [];
       let sampleData: Record<string, any>[] = [];
@@ -138,28 +142,29 @@ export function PromptEditor({ nodeId }: { nodeId: string }) {
       // Traverse back if it's a watch node, or a node without output
       while (actualSourceNode) {
         if (actualSourceNode.type === 'watch') {
-          const watchIncomingEdges = edges.filter(e => e.target === actualSourceNode!.id);
-          actualSourceNode = nodes.find(n => n.id === watchIncomingEdges[0]?.source);
+          const watchIncomingEdges = state.edges.filter(e => e.target === actualSourceNode!.id);
+          actualSourceNode = state.nodes.find(n => n.id === watchIncomingEdges[0]?.source);
         } else if (actualSourceNode.type === 'transform' && (!actualSourceNode.data.outputHeaders || (actualSourceNode.data.outputHeaders as any[]).length === 0)) {
-          const incomingEdges = edges.filter(e => e.target === actualSourceNode!.id);
-          actualSourceNode = nodes.find(n => n.id === incomingEdges[0]?.source);
+          const incomingEdges = state.edges.filter(e => e.target === actualSourceNode!.id);
+          actualSourceNode = state.nodes.find(n => n.id === incomingEdges[0]?.source);
         } else if (actualSourceNode.type === 'visualization' && !actualSourceNode.data.outputChartConfig) {
-          const incomingEdges = edges.filter(e => e.target === actualSourceNode!.id);
-          actualSourceNode = nodes.find(n => n.id === incomingEdges[0]?.source);
+          const incomingEdges = state.edges.filter(e => e.target === actualSourceNode!.id);
+          actualSourceNode = state.nodes.find(n => n.id === incomingEdges[0]?.source);
         } else {
           break;
         }
       }
 
       if (actualSourceNode?.type === 'dataSource' && actualSourceNode.data.selectedSourceId) {
-        const ds = dataSources.find(d => d.id === actualSourceNode.data.selectedSourceId);
+        const ds = state.dataSources.find(d => d.id === actualSourceNode!.data.selectedSourceId);
         if (ds) {
           addLog(`Found data source: ${ds.name}`, 'info');
-          schema = ds.headers.map(h => ({ name: h, type: 'unknown' }));
+          schema = (ds.headers || []).map(h => ({ name: h, type: 'unknown' }));
           // Get first 2 rows
-          sampleData = ds.previewData.slice(0, 2).map(row => {
+          const dataToSlice = ds.data || (ds as any).previewData || [];
+          sampleData = dataToSlice.slice(0, 2).map((row: any[]) => {
             const obj: Record<string, any> = {};
-            ds.headers.forEach((h, i) => {
+            (ds.headers || []).forEach((h, i) => {
               obj[h] = row[i];
             });
             return obj;
@@ -277,11 +282,11 @@ export function PromptEditor({ nodeId }: { nodeId: string }) {
               <ChevronDown size={12} />
             </button>
           </div>
-          <div className="p-1.5 overflow-y-auto custom-scrollbar flex flex-col gap-0.5 font-mono text-[9px] nodrag">
+          <div className="p-1.5 overflow-y-auto custom-scrollbar flex flex-col gap-0.5 font-mono text-[9px] nodrag select-text cursor-text">
             {logs.map(log => (
               <div key={log.id} className={`whitespace-pre-wrap ${log.type === 'error' ? 'text-red-500 dark:text-red-400' : log.type === 'success' ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-600 dark:text-slate-300'}`}>
-                <span className="text-slate-400 dark:text-slate-600 mr-1">[{new Date().toLocaleTimeString()}]</span>
-                {log.text}
+                <span className="text-slate-400 dark:text-slate-600 mr-1 select-none">[{new Date().toLocaleTimeString()}]</span>
+                <span className="select-text">{log.text}</span>
               </div>
             ))}
             {isGenerating && (

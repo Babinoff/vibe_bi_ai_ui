@@ -67,7 +67,6 @@ export function DataSourcePanel() {
       header: true,
       skipEmptyLines: true,
       dynamicTyping: true,
-      preview: 50,
       encoding: detectedEncoding,
       complete: (results) => {
         const headers = results.meta.fields || [];
@@ -79,7 +78,7 @@ export function DataSourcePanel() {
           id: `ds-${Date.now()}`,
           name: file.name,
           headers,
-          previewData: rows
+          data: rows
         });
         
         setIsLoading(false);
@@ -159,9 +158,9 @@ export function DataSourcePanel() {
                     </tr>
                   </thead>
                   <tbody>
-                    {ds.previewData.map((row, rowIndex) => (
+                    {ds.data?.slice(0, 50).map((row, rowIndex) => (
                       <tr key={rowIndex} className="hover:bg-slate-100 dark:hover:bg-slate-800/50 transition-colors">
-                        {row.map((cell, cellIndex) => (
+                        {row.map((cell: any, cellIndex: number) => (
                           <td key={cellIndex} className="p-2 border-b border-r border-slate-200 dark:border-slate-700/50 text-slate-600 dark:text-slate-400 whitespace-nowrap max-w-[150px] truncate" title={String(cell)}>
                             {cell}
                           </td>
@@ -172,7 +171,7 @@ export function DataSourcePanel() {
                 </table>
               </div>
               <div className="p-2 text-[10px] text-slate-500 bg-slate-100 dark:bg-slate-800/80 border-t border-slate-200 dark:border-slate-700 text-center shrink-0">
-                Previewing first {ds.previewData.length} rows
+                Previewing first {Math.min(50, ds.data?.length || 0)} of {ds.data?.length || 0} rows
               </div>
             </div>
           ))}

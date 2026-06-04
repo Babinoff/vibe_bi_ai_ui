@@ -199,7 +199,7 @@ export function DashboardPanel() {
           const ds = dataSources.find(d => d.id === actualSourceNode.data.selectedSourceId);
           if (ds) {
             headers = ds.headers;
-            data = ds.previewData;
+            data = ds.data;
           }
         } else {
           headers = (actualSourceNode.data.outputHeaders || []) as string[];
@@ -227,7 +227,7 @@ export function DashboardPanel() {
                   </tr>
                 </thead>
                 <tbody>
-                  {data.map((row: any[], rowIndex: number) => (
+                  {data.slice(0, 50).map((row: any[], rowIndex: number) => (
                     <tr key={rowIndex} className="hover:bg-slate-100 dark:hover:bg-slate-800/50 transition-colors">
                       {row.map((cell: any, cellIndex: number) => (
                         <td key={cellIndex} className="p-2 border-b border-r border-slate-200 dark:border-slate-700/50 text-slate-600 dark:text-slate-400 whitespace-nowrap max-w-[200px] truncate" title={String(cell)}>

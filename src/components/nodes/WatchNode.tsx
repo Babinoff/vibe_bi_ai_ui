@@ -48,7 +48,7 @@ export function WatchNode({ id, selected }: { id: string, selected?: boolean }) 
       console.log('WatchNode found ds:', ds);
       if (ds) {
         headers = ds.headers;
-        data = ds.previewData;
+        data = ds.data;
       }
     } else {
       headers = (actualSourceNode.data.outputHeaders || []) as string[];

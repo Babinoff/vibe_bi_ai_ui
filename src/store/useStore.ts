@@ -20,7 +20,7 @@ export type DataSource = {
   id: string;
   name: string;
   headers: string[];
-  previewData: any[][];
+  data: any[][];
 };
 
 export interface WidgetConfig {
@@ -275,7 +275,10 @@ export const useStore = create<AppState>()(
         set({
           nodes: workspace.nodes || [],
           edges: workspace.edges || [],
-          dataSources: workspace.dataSources || [],
+          dataSources: (workspace.dataSources || []).map(ds => ({
+            ...ds,
+            data: ds.data || (ds as any).previewData || []
+          })),
           widgets: workspace.widgets || [],
           selectedNodeId: null,
           selectedDataValue: null,

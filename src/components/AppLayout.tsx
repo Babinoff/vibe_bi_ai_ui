@@ -94,7 +94,7 @@ export function AppLayout() {
           const ds = dataSources.find(d => d.id === sourceNode!.data.selectedSourceId);
           if (ds) {
             headers = ds.headers;
-            data = ds.previewData;
+            data = ds.data;
           }
         } else if (sourceNode.type === 'transform') {
           headers = (sourceNode.data.outputHeaders || []) as string[];
