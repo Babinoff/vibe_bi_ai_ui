@@ -3,6 +3,8 @@
 </p>
 
 # BI(AI)UI - Automated Business Intelligence Tool
+https://youtu.be/bkBXZeKwJMc - demo
+https://babinoff.github.io/vibe_bi_ai_ui/ - demo
 
 **BI(AI)UI** — это современное приложение для автоматизированного создания бизнес-аналитики с использованием визуального нодового интерфейса и возможностей искусственного интеллекта (Gemini, Mistral, OpenAI, Claude). 
 
