@@ -301,6 +301,15 @@ export const useStore = create<AppState>()(
         openaiToken: state.openaiToken,
         claudeToken: state.claudeToken,
       }),
+      merge: (persistedState: any, currentState) => {
+        if (persistedState && persistedState.dataSources) {
+          persistedState.dataSources = persistedState.dataSources.map((ds: any) => ({
+            ...ds,
+            data: ds.data || ds.previewData || []
+          }));
+        }
+        return { ...currentState, ...persistedState };
+      },
     }
   )
 );
