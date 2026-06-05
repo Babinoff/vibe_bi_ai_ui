@@ -103,6 +103,7 @@ export function LLMPromptEditor({
     setIsRunning(true);
     setLogs([]);
     setShowLogs(true);
+    let hasError = false;
     
     try {
       const state = useStore.getState();
@@ -126,12 +127,14 @@ export function LLMPromptEditor({
         updatedHistory = [newHistoryItem, ...history];
         updateNodeData(nodeId, { history: updatedHistory });
       }
-      
-      setTimeout(() => setShowLogs(false), 5000);
     } catch (err: any) {
       addLog(`Execution Error: ${err.message}`, 'error');
+      hasError = true;
     } finally {
       setIsRunning(false);
+      if (!hasError) {
+        setTimeout(() => setShowLogs(false), 5000);
+      }
     }
   };
 
@@ -142,6 +145,7 @@ export function LLMPromptEditor({
     setError(null);
     setLogs([]);
     setShowLogs(true);
+    let hasError = false;
     
     try {
       const state = useStore.getState();
@@ -171,13 +175,23 @@ export function LLMPromptEditor({
         history: [newHistoryItem, ...history]
       });
       
-      setTimeout(() => setShowLogs(false), 3000);
+      // Auto-run the generated code
+      try {
+        await onRun(result.code, inputHeaders, inputData, addLog);
+      } catch (runErr: any) {
+        addLog(`Auto-run Error: ${runErr.message}`, 'error');
+        hasError = true;
+      }
     } catch (err: any) {
       const errorMsg = err.message || 'An error occurred during generation';
       setError(errorMsg);
       addLog(`Error: ${errorMsg}`, 'error');
+      hasError = true;
     } finally {
       setIsGenerating(false);
+      if (!hasError) {
+        setTimeout(() => setShowLogs(false), 3000);
+      }
     }
   };
 

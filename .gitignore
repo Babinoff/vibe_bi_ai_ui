@@ -6,3 +6,4 @@ coverage/
 *.log
 .env*
 !.env.example
+example/Парсинг_задач_Revit_Server_01_04_2026_01_05_2026_2.csv

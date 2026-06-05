@@ -6,17 +6,11 @@ export function getActualSourceData(nodeId: string, state: ReturnType<typeof use
   
   let actualSourceNode = sourceNode;
   
-  // Traverse back if it's a watch node, or a node without output
+  // Traverse back if it's a watch node
   while (actualSourceNode) {
     if (actualSourceNode.type === 'watch') {
       const watchIncomingEdges = state.edges.filter(e => e.target === actualSourceNode!.id);
       actualSourceNode = state.nodes.find(n => n.id === watchIncomingEdges[0]?.source);
-    } else if (actualSourceNode.type === 'transform' && (!actualSourceNode.data.outputHeaders || (actualSourceNode.data.outputHeaders as any[]).length === 0)) {
-      const incomingEdges = state.edges.filter(e => e.target === actualSourceNode!.id);
-      actualSourceNode = state.nodes.find(n => n.id === incomingEdges[0]?.source);
-    } else if (actualSourceNode.type === 'visualization' && !actualSourceNode.data.outputChartConfig) {
-      const incomingEdges = state.edges.filter(e => e.target === actualSourceNode!.id);
-      actualSourceNode = state.nodes.find(n => n.id === incomingEdges[0]?.source);
     } else {
       break;
     }

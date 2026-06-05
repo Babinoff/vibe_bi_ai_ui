@@ -51,6 +51,7 @@ import pandas as pd
 import json
 import sys
 import io
+import traceback
 
 def run_user_code():
     data_dicts = json.loads(input_json)
@@ -70,30 +71,46 @@ def run_user_code():
     try:
         user_code = ${JSON.stringify(code)}
         exec(user_code, user_globals)
+        
+        output_df = user_globals.get('result_df', user_globals['df'])
+        printed_text = redirected_output.getvalue()
+        
+        result_json = output_df.to_json(orient='split', date_format='iso')
+        
+        return json.dumps({
+            "success": True,
+            "df_json": result_json,
+            "printed_text": printed_text
+        })
+    except Exception as e:
+        error_msg = traceback.format_exc()
+        printed_text = redirected_output.getvalue()
+        return json.dumps({
+            "success": False,
+            "error": error_msg,
+            "printed_text": printed_text
+        })
     finally:
         sys.stdout = old_stdout
-    
-    output_df = user_globals.get('result_df', user_globals['df'])
-    printed_text = redirected_output.getvalue()
-    
-    return output_df, printed_text
 
-result_df, printed_text = run_user_code()
-result_json = result_df.to_json(orient='split', date_format='iso')
-
-# Return both JSON data and printed text
-json.dumps({
-    "df_json": result_json,
-    "printed_text": printed_text
-})
+result_json_str = run_user_code()
+result_json_str
 `;
 
     onLog?.('Executing Python code...');
     try {
       const combinedJsonStr = await pyodide.runPythonAsync(wrapperCode);
-      onLog?.('Execution successful. Parsing results...');
+      onLog?.('Execution complete. Parsing results...');
       
       const combinedObj = JSON.parse(combinedJsonStr);
+      
+      if (!combinedObj.success) {
+        if (combinedObj.printed_text) {
+          onLog?.('Output before error:\\n' + combinedObj.printed_text);
+        }
+        throw new Error(combinedObj.error || 'Unknown Python error');
+      }
+      
       const resultObj = JSON.parse(combinedObj.df_json);
       
       if (combinedObj.printed_text) {

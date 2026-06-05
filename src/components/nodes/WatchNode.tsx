@@ -14,19 +14,11 @@ export function WatchNode({ id, selected }: { id: string, selected?: boolean }) 
   const sourceNode = nodes.find(n => n.id === incomingEdge?.source);
   
   let actualSourceNode = sourceNode;
-  // Traverse back if the source is a watch node, or a transform node without output
+  // Traverse back if the source is a watch node
   while (actualSourceNode) {
     if (actualSourceNode.type === 'watch') {
       const watchIncomingEdges = edges.filter(e => e.target === actualSourceNode!.id);
       actualSourceNode = nodes.find(n => n.id === watchIncomingEdges[0]?.source);
-    } else if (actualSourceNode.type === 'transform' && (!actualSourceNode.data.outputHeaders || (actualSourceNode.data.outputHeaders as any[]).length === 0)) {
-      // If transform hasn't run, show its input (raw data)
-      const incomingEdges = edges.filter(e => e.target === actualSourceNode!.id);
-      actualSourceNode = nodes.find(n => n.id === incomingEdges[0]?.source);
-    } else if (actualSourceNode.type === 'visualization' && !actualSourceNode.data.outputChartConfig) {
-      // If visualization hasn't run, show its input data
-      const incomingEdges = edges.filter(e => e.target === actualSourceNode!.id);
-      actualSourceNode = nodes.find(n => n.id === incomingEdges[0]?.source);
     } else {
       break;
     }
