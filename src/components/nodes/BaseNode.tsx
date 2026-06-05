@@ -63,7 +63,7 @@ const colorMap = {
 };
 
 // Единый источник правды для стилей и размеров коннекторов
-const HANDLE_CLASS = "w-8 h-8 border-[3px] border-white dark:border-slate-800 hover:scale-125 transition-transform cursor-crosshair";
+const HANDLE_CLASS = "!w-4 !h-4 border-[3px] border-white dark:border-slate-800 hover:!scale-125 transition-transform cursor-crosshair";
 
 export function BaseNode({
   id,
