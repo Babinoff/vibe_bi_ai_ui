@@ -6,52 +6,52 @@
 https://youtu.be/bkBXZeKwJMc - demo
 https://babinoff.github.io/vibe_bi_ai_ui/ - demo
 
-**BI(AI)UI** — это современное приложение для автоматизированного создания бизнес-аналитики с использованием визуального нодового интерфейса и возможностей искусственного интеллекта (Gemini, Mistral, OpenAI, Claude). 
+**BI(AI)UI** is a modern application for automated business intelligence creation using a visual node-based interface and Artificial Intelligence capabilities (Gemini, Mistral, OpenAI, Claude). 
 
-**Ключевая особенность архитектуры (Privacy-First):** Все данные обрабатываются локально прямо в браузере через WASM Python (Pyodide). Нейросети используются исключительно для написания кода трансформации и визуализации, но **сами пользовательские данные им не отправляются** (передаются только схема датасета и небольшие сэмплы).
-
----
-
-## 🚀 Ключевой функционал
-
-### 1. Интерактивный пайплайн данных (Node Canvas)
-Основное рабочее пространство реализовано на базе `React Flow`. Процесс анализа строится путем соединения специализированных узлов (нод):
-- **DataSourceNode**: Входная точка пайплайна. Позволяет выбрать предварительно загруженный CSV-датасет.
-- **TransformNode**: Узел трансформации данных. Пользователь пишет промпт (например, "Сгруппируй по дате и посчитай сумму"), выбранная LLM генерирует Python-код, а Pyodide исполняет его над данными через `pandas`.
-- **WatchNode**: Узел-инспектор. Показывает текущее состояние данных в виде удобной таблицы (Data Grid).
-- **VisualizationNode**: Узел настройки графиков. ИИ генерирует JavaScript-функции для рендера графиков на базе популярных библиотек (ECharts, Chart.js, Plotly).
-- **DashboardNode**: Экспортирует готовый результат пайплайна (график или таблицу) на финальный дашборд.
-
-### 2. Панель источников данных (Data Source)
-- Локальная загрузка и быстрая обработка CSV-файлов (через `papaparse`).
-- Управление загруженными датасетами, которые становятся доступны для использования в нодах.
-- Хранение исходных данных в едином высокопроизводительном стейте приложения (Zustand).
-
-### 3. Интеграция с LLM (AI-генерация кода)
-- **Поддержка нескольких провайдеров:** Gemini, Mistral, OpenAI, Claude.
-- Удобный редактор промптов (`PromptEditor`) прямо внутри узлов пайплайна.
-- ИИ автоматически подбирает нужные преобразования `pandas` или конфигурации для JS-библиотек визуализации в зависимости от поставленной задачи на естественном языке.
-
-### 4. Презентационный слой (Dashboard)
-- Отдельная панель (`DashboardPanel`) для просмотра и компоновки финальных виджетов.
-- Виджеты, переданные из `DashboardNode`, моментально появляются на дашборде.
-- Масштабируемые области, свободное размещение графиков и удобная компоновка итогового интерактивного отчета.
+**Key Architectural Feature (Privacy-First):** All data is processed locally directly in the browser via WASM Python (Pyodide). Neural networks are used exclusively for writing transformation and visualization code, but **the user data itself is never sent to them** (only the dataset schema and small samples are transmitted).
 
 ---
 
-## 🔄 Жизненный цикл данных
+## 🚀 Key Features
 
-1. **Загрузка:** Пользователь загружает CSV в панели источников данных.
-2. **Инициализация:** Датасет выбирается в `DataSourceNode` на холсте.
-3. **Трансформация:** Данные передаются в `TransformNode`. Пользователь вводит промпт, LLM пишет Python-код, `Pyodide` безопасно применяет его к данным в браузере.
-4. **Анализ и визуализация:** Трансформированные данные инспектируются в `WatchNode` или преобразуются в готовый график в `VisualizationNode`.
-5. **Презентация:** Готовый виджет (таблица или график) отправляется через `DashboardNode` на итоговый дашборд.
+### 1. Interactive Data Pipeline (Node Canvas)
+The main workspace is implemented based on `React Flow`. The analysis process is built by connecting specialized nodes:
+- **DataSourceNode**: The entry point of the pipeline. Allows selecting a pre-loaded CSV dataset.
+- **TransformNode**: Data transformation node. The user enters a prompt (e.g., "Group by date and calculate the sum"), the selected LLM generates Python code, and Pyodide executes it on the data using `pandas`.
+- **WatchNode**: Inspector node. Displays the current state of the data in a convenient table (Data Grid).
+- **VisualizationNode**: Chart configuration node. AI generates JavaScript functions to render charts based on popular libraries (ECharts, Chart.js, Plotly).
+- **DashboardNode**: Exports the finished pipeline result (chart or table) to the final dashboard.
+
+### 2. Data Source Panel
+- Local loading and fast processing of CSV files (via `papaparse`).
+- Management of loaded datasets, making them available for use in nodes.
+- Storage of source data in a single high-performance application state (Zustand).
+
+### 3. LLM Integration (AI Code Generation)
+- **Multi-provider support:** Gemini, Mistral, OpenAI, Claude.
+- Convenient prompt editor (`PromptEditor`) right inside the pipeline nodes.
+- AI automatically selects the necessary `pandas` transformations or configurations for JS visualization libraries depending on the natural language task provided.
+
+### 4. Presentation Layer (Dashboard)
+- A separate panel (`DashboardPanel`) for viewing and arranging final widgets.
+- Widgets passed from `DashboardNode` instantly appear on the dashboard.
+- Scalable areas, free placement of charts, and convenient layout of the final interactive report.
 
 ---
 
-## 🛠 Стек технологий
-- **Фронтенд:** React 19, TypeScript, TailwindCSS
+## 🔄 Data Lifecycle
+
+1. **Loading:** The user loads a CSV in the data source panel.
+2. **Initialization:** The dataset is selected in the `DataSourceNode` on the canvas.
+3. **Transformation:** Data is passed to the `TransformNode`. The user enters a prompt, the LLM writes Python code, and `Pyodide` safely applies it to the data in the browser.
+4. **Analysis and Visualization:** Transformed data is inspected in the `WatchNode` or converted into a ready-made chart in the `VisualizationNode`.
+5. **Presentation:** The finished widget (table or chart) is sent via the `DashboardNode` to the final dashboard.
+
+---
+
+## 🛠 Tech Stack
+- **Frontend:** React 19, TypeScript, TailwindCSS
 - **State Management:** Zustand
-- **Визуальный редактор:** React Flow (`@xyflow/react`)
-- **Локальная обработка данных:** Pyodide (WASM Python), Pandas
-- **ИИ / LLM:** `@google/genai`, `@mistralai/mistralai`, прямые REST API для OpenAI и Claude
+- **Visual Editor:** React Flow (`@xyflow/react`)
+- **Local Data Processing:** Pyodide (WASM Python), Pandas
+- **AI / LLM:** `@google/genai`, `@mistralai/mistralai`, direct REST APIs for OpenAI and Claude
