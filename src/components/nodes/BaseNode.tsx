@@ -2,6 +2,7 @@ import React from 'react';
 import { Handle, Position, NodeResizer } from '@xyflow/react';
 import { Copy } from 'lucide-react';
 import { useStore } from '../../store/useStore';
+import { NODE_CONFIG } from '../../config/nodeConfig';
 
 export type BaseNodeColor = 'indigo' | 'blue' | 'emerald' | 'orange' | 'purple';
 
@@ -71,9 +72,9 @@ export function BaseNode({
   icon,
   color,
   selected,
-  resizable,
-  minWidth = 200,
-  minHeight = 150,
+  resizable = true,
+  minWidth = NODE_CONFIG.minWidth,
+  minHeight = NODE_CONFIG.minHeight,
   children,
   className = '',
   headerActions,
@@ -120,7 +121,7 @@ export function BaseNode({
           </div>
         </div>
         
-        <div className="flex-1 flex flex-col relative min-h-0 overflow-hidden rounded-b-lg">
+        <div className="grow flex flex-col relative min-h-0 rounded-b-lg">
           {children}
         </div>
       </div>

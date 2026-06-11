@@ -26,10 +26,11 @@ export function DataSourceNode({ id, data, selected }: { id: string, data: any, 
       icon={<Database size={14} />}
       color="indigo"
       selected={selected}
-      className="min-w-[200px]"
+      minWidth={100}
+      className="w-full h-full"
       handles={[{ type: 'source', position: Position.Right }]}
     >
-      <div className="p-3 flex flex-col gap-2">
+      <div className="p-3 flex flex-col gap-2 h-full">
         <div className="text-xs text-slate-500 dark:text-slate-400">Select File:</div>
         <div className="relative">
           <select 

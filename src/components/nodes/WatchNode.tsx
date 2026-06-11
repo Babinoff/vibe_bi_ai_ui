@@ -55,9 +55,6 @@ export function WatchNode({ id, selected }: { id: string, selected?: boolean }) 
       icon={<Eye size={14} />}
       color="orange"
       selected={selected}
-      resizable={true}
-      minWidth={200}
-      minHeight={150}
       className="w-full h-full"
       handles={[
         { type: 'target', position: Position.Left },

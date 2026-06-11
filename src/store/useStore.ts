@@ -13,6 +13,7 @@ import {
   applyNodeChanges,
   applyEdgeChanges,
 } from '@xyflow/react';
+import { NODE_CONFIG } from '../config/nodeConfig';
 
 export type AppNode = Node;
 
@@ -273,7 +274,16 @@ export const useStore = create<AppState>()(
 
       loadWorkspace: (workspace) => {
         set({
-          nodes: workspace.nodes || [],
+          nodes: (workspace.nodes || []).map(n => ({
+            ...n,
+            style: {
+              width: n.type === 'dataSource' || n.type === 'dashboard' 
+                ? NODE_CONFIG.defaultWidth / 2 
+                : NODE_CONFIG.defaultWidth,
+              ...(n.type === 'watch' && !n.style?.height ? { height: NODE_CONFIG.defaultHeight } : {}),
+              ...n.style,
+            }
+          })),
           edges: workspace.edges || [],
           dataSources: (workspace.dataSources || []).map(ds => ({
             ...ds,

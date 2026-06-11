@@ -17,10 +17,10 @@ export function DashboardNode({ id, selected }: { id: string, selected?: boolean
       icon={<LayoutDashboard size={14} />}
       color="purple"
       selected={selected}
-      className="min-w-[200px]"
+      className="w-full h-full"
       handles={[{ type: 'target', position: Position.Left }]}
     >
-      <div className="p-3 flex flex-col gap-3">
+      <div className="p-3 flex flex-col gap-3 h-full overflow-auto custom-scrollbar">
         <div className="text-[10px] text-slate-500 dark:text-slate-400">
           Connected Inputs: {incomingEdges.length}
         </div>

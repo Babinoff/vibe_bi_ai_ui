@@ -70,7 +70,7 @@ export function TransformNode({ id, data, selected }: { id: string, data: any, s
       icon={<Cpu size={14} />}
       color="blue"
       selected={selected}
-      className="w-[800px]"
+      className="w-full h-full"
       handles={[
         { type: 'target', position: Position.Left },
         { type: 'source', position: Position.Right }

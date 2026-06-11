@@ -14,6 +14,7 @@ import '@xyflow/react/dist/style.css';
 import { Save, Upload, Sun, Moon, Zap } from 'lucide-react';
 
 import { useStore, AppNode } from '../store/useStore';
+import { NODE_CONFIG } from '../config/nodeConfig';
 import { DataSourceNode } from './nodes/DataSourceNode';
 import { TransformNode } from './nodes/TransformNode';
 import { VisualizationNode } from './nodes/VisualizationNode';
@@ -138,10 +139,15 @@ function FlowEditor() {
       type,
       position,
       data: { label: `New ${type} node` },
+      style: { 
+        width: type === 'dataSource' || type === 'dashboard' 
+          ? NODE_CONFIG.defaultWidth / 2 
+          : NODE_CONFIG.defaultWidth 
+      },
     };
 
     if (type === 'watch') {
-      newNode.style = { width: 350, height: 250 };
+      newNode.style.height = NODE_CONFIG.defaultHeight;
     }
 
     addNode(newNode);
