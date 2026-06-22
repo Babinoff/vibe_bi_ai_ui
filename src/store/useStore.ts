@@ -17,6 +17,10 @@ import { NODE_CONFIG } from '../config/nodeConfig';
 
 export type AppNode = Node;
 
+const getNextZIndex = (nodes: AppNode[]) => {
+  return Math.max(...nodes.map(n => n.zIndex || 0), 0) + 1;
+};
+
 export type DataSource = {
   id: string;
   name: string;
@@ -111,14 +115,19 @@ export const useStore = create<AppState>()(
       },
       addNode: (node: AppNode) => {
         set({
-          nodes: [...get().nodes, node],
+          nodes: [
+            ...get().nodes.map((n) => ({ ...n, selected: false })),
+            { ...node, selected: true, zIndex: getNextZIndex(get().nodes) }
+          ],
+          selectedNodeId: node.id
         });
       },
       addNodesAndEdges: (newNodes: AppNode[], newEdges: Edge[]) => {
+        const nextZ = getNextZIndex(get().nodes);
         set({
           nodes: [
             ...get().nodes.map((n) => ({ ...n, selected: false })),
-            ...newNodes,
+            ...newNodes.map((n, i) => ({ ...n, selected: true, zIndex: nextZ + i })),
           ],
           edges: [
             ...get().edges.map((e) => ({ ...e, selected: false })),
@@ -131,8 +140,9 @@ export const useStore = create<AppState>()(
         const nodesToCopy = state.nodes.filter((n) => ids.includes(n.id));
         if (nodesToCopy.length === 0) return;
 
+        const nextZ = getNextZIndex(state.nodes);
         const idMap = new Map<string, string>();
-        const newNodes: AppNode[] = nodesToCopy.map((node) => {
+        const newNodes: AppNode[] = nodesToCopy.map((node, i) => {
           const clonedNode = JSON.parse(JSON.stringify(node));
           const newId = `${clonedNode.type}-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
           idMap.set(node.id, newId);
@@ -144,6 +154,7 @@ export const useStore = create<AppState>()(
               y: clonedNode.position.y + 50,
             },
             selected: true,
+            zIndex: nextZ + i,
           };
         });
 

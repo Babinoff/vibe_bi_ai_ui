@@ -10,6 +10,8 @@ https://babinoff.github.io/vibe_bi_ai_ui/ - demo
 
 **Key Architectural Feature (Privacy-First):** All data is processed locally directly in the browser via WASM Python (Pyodide). Neural networks are used exclusively for writing transformation and visualization code, but **the user data itself is never sent to them** (only the dataset schema and small samples are transmitted).
 
+![BIUI Example](example/example.png)
+
 ---
 
 ## 🚀 Key Features
